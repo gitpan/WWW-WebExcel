@@ -1,9 +1,13 @@
-WWW-WebExcel version 0.01
+WWW-WebExcel version 0.02
 =========================
 
 This module is used to show data in excel-files in the web. It can be used
 to provide the results of a database query as an excel-file. It does not provide
 cell-formats yet, but the module will be extended within the next weeks.
+
+Compared to version 0.01 there are two new methods in 0.02:
+ * add_data appends new rows to the existing ones
+ * add_headers replaces the existing list of headers
 
 As a simple example:
 

@@ -1,6 +1,6 @@
 package WWW::WebExcel;
 
-use 5.006001;
+use 5.006;
 use strict;
 use warnings;
 use Spreadsheet::WriteExcel;
@@ -11,7 +11,7 @@ our @ISA         = qw(Exporter);
 our %EXPORT_TAGS = ();
 our @EXPORT_OK   = ();
 our @EXPORT      = qw();
-our $VERSION     = '0.01';
+our $VERSION     = '0.02';
 
 sub new{
   my ($class,%opts) = @_;
@@ -34,6 +34,20 @@ sub del_worksheet{
   $self->{worksheets} = [@worksheets];
 }# end del_worksheet
 
+sub add_row{
+  my ($self,$title,$arref) = @_;
+  foreach my $worksheet(@{$self->{worksheets}}){
+    push(@{$worksheet->[1]->{'-data'}},$arref) if($worksheet->[0] eq $title);
+  }
+}# end add_data
+
+sub set_headers{
+  my ($self,$title,$arref) = @_;
+  foreach my $worksheet(@{$self->{worksheets}}){
+    $worksheet->[1]->{'-headers'} = $arref if($worksheet->[0] eq $title);
+  }
+}# end add_headers
+
 sub output{
   my ($self) = @_;
 
@@ -48,7 +62,7 @@ sub output{
       $sheet->write($row,$col,$_);
       $col++;
     }
-    $row++ if(defined $worksheet->[1]->{'-headers'});
+    $row++ if(scalar(@{$worksheet->[1]->{'-headers'}}) > 0);
     foreach my $data(@{$worksheet->[1]->{-data}}){
       $col = 0;
       foreach my $value(@$data){
@@ -105,6 +119,12 @@ WWW::WebExcel - Perl extension for creating excel-files printed to STDOUT
   my $worksheet = ['NAME',{-data => \@data2}];
   # create a new instance
   my $excel2    = WWW::WebExcel->new(-worksheets => [$worksheet]);
+
+  # add headers to 'NAME'
+  $excel2->set_headers('NAME',[qw/this is a test/]);
+  # append data to 'NAME'
+  $excel2->add_row('NAME',[qw/new row/]);
+
   $excel2->output();
 
 =head1 DESCRIPTION
@@ -141,6 +161,20 @@ a hash with (optional) information about the headlines and the data.
   $excel->del_worksheet('Test');
 
 Deletes all worksheets named like the first parameter
+
+=head2 add_row
+
+  # append data to 'NAME'
+  $excel->add_row('NAME',[qw/new row/]);
+
+Adds a new row to the worksheet named 'NAME'
+
+=head2 set_headers
+
+  # add headers to 'NAME'
+  $excel->set_headers('NAME',[qw/this is a test/]);
+
+set the headers for the worksheet named 'NAME'
 
 =head2 output
 
