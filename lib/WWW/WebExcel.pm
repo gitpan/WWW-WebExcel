@@ -11,7 +11,7 @@ our @ISA         = qw(Exporter);
 our %EXPORT_TAGS = ();
 our @EXPORT_OK   = ();
 our @EXPORT      = qw();
-our $VERSION     = '0.02';
+our $VERSION     = '0.03';
 
 sub new{
   my ($class,%opts) = @_;
@@ -36,17 +36,66 @@ sub del_worksheet{
 
 sub add_row{
   my ($self,$title,$arref) = @_;
+  die "Aborted: Worksheet ".$title." doesn't exist at WWW::WebExcel add_row()\n" unless(grep{$_->[0] eq $title}@{$self->{worksheets}});
+  die "Is not an arrayref at WWW::WebExcel add_row()\n" unless(ref($arref) eq 'ARRAY');
   foreach my $worksheet(@{$self->{worksheets}}){
     push(@{$worksheet->[1]->{'-data'}},$arref) if($worksheet->[0] eq $title);
+    last;
   }
 }# end add_data
 
 sub set_headers{
   my ($self,$title,$arref) = @_;
+  die "Aborted: Worksheet ".$title." doesn't exist at WWW::WebExcel set_headers()\n" unless(grep{$_->[0] eq $title}@{$self->{worksheets}});
+  die "Is not an arrayref at WWW::WebExcel set_headers()\n" unless(ref($arref) eq 'ARRAY');
   foreach my $worksheet(@{$self->{worksheets}}){
     $worksheet->[1]->{'-headers'} = $arref if($worksheet->[0] eq $title);
+    last;
   }
 }# end add_headers
+
+sub add_row_at{
+  my ($self,$title,$index,$arref) = @_;
+  die "Aborted: Worksheet ".$title." doesn't exist at WWW::WebExcel add_row_at()\n" unless(grep{$_->[0] eq $title}@{$self->{worksheets}});
+  die "Is not an arrayref at WWW::WebExcel add_row_at()\n" unless(ref($arref) eq 'ARRAY');
+  foreach my $worksheet(@{$self->{worksheets}}){
+    if($worksheet->[0] eq $title){
+      my @array = @{$worksheet->[1]->{'-data'}};
+      die "Index not in Array at WWW::WebExcel add_row_at()\n" if($index =~ /[^\d]/ || $index > $#array);
+      splice(@array,$index,0,$arref);
+      $worksheet->[1]->{'-data'} = \@array;
+      last;
+    }
+  }
+}# end add_row_at
+
+sub sort_data{
+  my ($self,$title,$index,$type) = @_;
+  die "Aborted: Worksheet ".$title." doesn't exist at WWW::WebExcel sort_data()\n" unless(grep{$_->[0] eq $title}@{$self->{worksheets}});
+  foreach my $worksheet(@{$self->{worksheets}}){
+    if($worksheet->[0] eq $title){
+      my @array = @{$worksheet->[1]->{'-data'}};
+      die "Index not in Array at WWW::WebExcel sort_data()\n" if($index =~ /[^\d]/ || $index > $#array);
+      if(_is_numeric(\@array)){
+        @array = sort{$a->[$index] <=> $b->[$index]}@array;
+      }
+      else{
+        @array = sort{$a->[$index] cmp $b->[$index]}@array;
+      }
+      @array = reverse(@array) if($type eq 'DESC');
+      $worksheet->[1]->{'-data'} = \@array;
+      last;
+    }
+  }
+}# end sort_data
+
+sub _is_numeric{
+  my ($arref) = @_;
+  foreach(@$arref){
+    return 0 if($_ =~ /[^\d\.]/);
+  }
+  return 1;
+}# end _is_numeric
 
 sub output{
   my ($self) = @_;
@@ -84,7 +133,7 @@ __END__
 
 =head1 NAME
 
-WWW::WebExcel - Perl extension for creating excel-files printed to STDOUT
+WWW::WebExcel - Perl extension for creating excel-files quickly
 
 =head1 SYNOPSIS
 
@@ -103,6 +152,12 @@ WWW::WebExcel - Perl extension for creating excel-files printed to STDOUT
   $excel->add_worksheet('Name of Worksheet',{-headers => \@header, -data => \@data});
   $excel->add_worksheet('Second Worksheet',{-data => \@data});
   $excel->add_worksheet('Test');
+
+  # add a row into the middle
+  $excel->add_row_at('Name of Worksheet',1,[qw/new row/]);
+
+  # sort data of worksheet - ASC or DESC
+  $excel->sort_data('Name of Worksheet',0,'DESC');
 
   # remove a worksheet
   $excel->del_worksheet('Test');
@@ -145,6 +200,10 @@ extended within the next few weeks.
   my $worksheet = ['NAME',{-data => ['This','is','an','Test']}];
   my $excel2    = WWW::WebExcel->new(-worksheets => [$worksheet]);
 
+  # to create a file
+  my $filename = 'test.xls';
+  my $excel = WWW::WebExcel->new(-filename => $filename);
+
 =head2 add_worksheet
 
   # add worksheets
@@ -169,6 +228,20 @@ Deletes all worksheets named like the first parameter
 
 Adds a new row to the worksheet named 'NAME'
 
+=head2 add_row_at
+
+  # add a row into the middle
+  $excel->add_row_at('Name of Worksheet',1,[qw/new row/]);
+
+This method inserts a row into the existing data
+
+=head2 sort_data
+
+  # sort data of worksheet - ASC or DESC
+  $excel->sort_data('Name of Worksheet',0,'DESC');
+
+sort_data sorts the rows
+
 =head2 set_headers
 
   # add headers to 'NAME'
@@ -190,15 +263,6 @@ This module requires Spreadsheet::WriteExcel
 
 I'm sure there are some bugs in this module. Feel free to contact me if you
 experienced any problem.
-
-=head1 ToDo
-
-* add formats to cell
-* write spreadsheet into file
-* add data (rows) to worksheet
-* add headers to worksheet (replace the existing list)
-* widen range of headers (add headers to the existing ones)
-* widen range of data (add cols to data)
 
 =head1 SEE ALSO
 

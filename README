@@ -1,4 +1,4 @@
-WWW-WebExcel version 0.02
+WWW-WebExcel version 0.03
 =========================
 
 This module is used to show data in excel-files in the web. It can be used
@@ -6,8 +6,12 @@ to provide the results of a database query as an excel-file. It does not provide
 cell-formats yet, but the module will be extended within the next weeks.
 
 Compared to version 0.01 there are two new methods in 0.02:
- * add_data appends new rows to the existing ones
- * add_headers replaces the existing list of headers
+ * add_row      appends new rows to the existing ones
+ * set_headers  replaces the existing list of headers
+
+Delta from 0.03 to 0.02:
+ * add_row_at   inserts a row into existing data
+ * sort_data    sorts the data
 
 As a simple example:
 
@@ -43,7 +47,7 @@ Put the correct copyright and licence information here.
 Copyright (C) 2004 by Renee Baecker
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.1 or,
+it under the same terms as Perl itself, either Perl version 5.6.1 or,
 at your option, any later version of Perl 5 you may have available.
 
 
