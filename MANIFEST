@@ -1,0 +1,7 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/WWW-WebExcel.t
+lib/WWW/WebExcel.pm
+META.yml                                 Module meta-data (added by MakeMaker)

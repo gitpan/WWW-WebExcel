@@ -1,0 +1,45 @@
+WWW-WebExcel version 0.01
+=========================
+
+This module is used to show data in excel-files in the web. It can be used
+to provide the results of a database query as an excel-file. It does not provide
+cell-formats yet, but the module will be extended within the next weeks.
+
+As a simple example:
+
+	binmode(\*STDOUT);
+	my @data;
+	$sth->execute() or die $DBI::errstr;
+	while(my @row = $sth->fetchrow_array()){
+	  push(@data,\@row);
+	}
+	my $worksheet = ['NAME',{-data => \@data}]
+	my $excel = WWW::WebExcel->new(-worksheets => [$worksheet]);
+	$excel->output();
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  Spreadsheet::WriteExcel
+
+COPYRIGHT AND LICENCE
+
+Put the correct copyright and licence information here.
+
+Copyright (C) 2004 by Renee Baecker
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.1 or,
+at your option, any later version of Perl 5 you may have available.
+
+
